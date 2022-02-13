@@ -1,3 +1,5 @@
+import isEmail from 'validator/lib/isEmail';
+
 const SHOW_ERROR_MESSAGES = 'show-error-message';
 
 const form = document.querySelector('.form') as HTMLFormElement;
@@ -10,7 +12,30 @@ const password2 = document.querySelector('.password2') as HTMLInputElement;
 form.addEventListener('submit', function (event) {
   event.preventDefault();
   hideErrorMessages(this);
+  checkForEmptyFields(username, email, password, password2);
+  checkEmail(email);
+  checkEqualsPasswords(password, password2);
+
+  if (shouldSendForm(this)) console.log('enviado.');
 });
+
+function checkForEmptyFields(...inputs: HTMLInputElement[]): void {
+  inputs.forEach((input) => {
+    if (!input.value) showErrorMessage(input, 'O campo não pode estar vazio.');
+  });
+}
+
+function checkEmail(input: HTMLInputElement): void {
+  if (!isEmail(input.value)) showErrorMessage(input, 'Email inválido');
+}
+
+function checkEqualsPasswords(
+  password: HTMLInputElement,
+  password2: HTMLInputElement,
+) {
+  if (password.value != password2.value)
+    showErrorMessage(password2, 'As senhas precisas ser iguais.');
+}
 
 function hideErrorMessages(form: HTMLFormElement): void {
   form
@@ -27,5 +52,11 @@ function showErrorMessage(input: HTMLInputElement, msg: string): void {
   formFields.classList.add(SHOW_ERROR_MESSAGES);
 }
 
-showErrorMessage(username, 'Preencher nome de usuário.');
-hideErrorMessages(form);
+function shouldSendForm(form: HTMLFormElement): boolean {
+  let send = true;
+  form
+    .querySelectorAll('.' + SHOW_ERROR_MESSAGES)
+    .forEach(() => (send = false));
+
+  return send;
+}
